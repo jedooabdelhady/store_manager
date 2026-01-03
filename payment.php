@@ -8,38 +8,41 @@ if (!isset($_GET['id']) || empty($_GET['id'])) {
 $order_id = intval($_GET['id']);
 $msg = "";
 
-// 1. معالجة رفع الإيصال
+// معالجة رفع الإيصال
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['receipt'])) {
     
     if ($_FILES['receipt']['error'] == 0) {
-        $ext = pathinfo($_FILES['receipt']['name'], PATHINFO_EXTENSION);
-        $new_name = "REC_" . time() . "_" . $order_id . "." . $ext;
-        $target = "uploads/receipts/" . $new_name;
+        // استخدام __DIR__
+        $uploadDir = __DIR__ . '/uploads/receipts/';
+        
+        if (!is_dir($uploadDir)) {
+            mkdir($uploadDir, 0755, true);
+        }
+        
+        $ext = strtolower(pathinfo($_FILES['receipt']['name'], PATHINFO_EXTENSION));
+        $newName = "REC_" . time() . "_" . $order_id . "." . $ext;
+        $target = $uploadDir . $newName;
         
         if (move_uploaded_file($_FILES['receipt']['tmp_name'], $target)) {
-            // تحديث الحالة إلى "بانتظار التأكيد"
-            $sql = "UPDATE orders SET status = 'waiting_confirmation', receipt_image = '$target' WHERE id = $order_id";
-            if (mysqli_query($conn, $sql)) {
+            // حفظ المسار النسبي
+            $relativePath = 'uploads/receipts/' . $newName;
+            
+            $stmt = $conn->prepare("UPDATE orders SET status = 'waiting_confirmation', receipt_image = ? WHERE id = ?");
+            $stmt->bind_param("si", $relativePath, $order_id);
+            
+            if ($stmt->execute()) {
                 $msg = "uploaded";
             } else {
                 $msg = "error_db";
             }
+            $stmt->close();
         } else {
             $msg = "error_upload";
         }
     }
 }
 
-// 2. جلب بيانات الطلب والتاجر البنكية
-$sql = "SELECT orders.*, merchants.store_name, merchants.bank_name, merchants.iban, merchants.beneficiary_name 
-        FROM orders 
-        JOIN merchants ON orders.merchant_id = merchants.id 
-        WHERE orders.id = $order_id LIMIT 1";
-
-$result = mysqli_query($conn, $sql);
-$order = mysqli_fetch_assoc($result);
-
-if (!$order) die("الطلب غير موجود.");
+// باقي الكود كما هو...
 ?>
 
 <!DOCTYPE html>

@@ -231,7 +231,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         </button>
         
         <div class="text-center d-flex justify-content-between align-items-center mt-3 px-2">
-            <a href="merchant_register.php" class="small text-primary fw-bold text-decoration-none">تسجيل تاجر جديد</a>
+            <a href="register.php" class="btn btn-primary-custom rounded-3">انضم كتاجر</a>
             <a href="#" class="small text-secondary fw-semibold text-decoration-none opacity-75">نسيت كلمة المرور؟</a>
         </div>
     </form>
