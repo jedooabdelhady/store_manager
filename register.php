@@ -93,7 +93,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['a
     $password_hashed = password_hash($password_raw, PASSWORD_DEFAULT);
     $api_key = "tkp_" . bin2hex(random_bytes(24));
 
-    // 7. الإدخال في القاعدة (تأكد من مطابقة أسماء الأعمدة)
+    // 7. الإدخال في القاعدة
     $sql = "INSERT INTO merchants (
         first_name, last_name, email, phone, password, api_key,
         store_name, store_link, doc_type, doc_number, doc_expiry, doc_file, national_address,
@@ -105,7 +105,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['a
     )";
     
     if (mysqli_query($conn, $sql)) {
-        echo json_encode(['status' => 'success', 'message' => 'تم التسجيل بنجاح']);
+        // توليد OTP للتاجر الجديد وتوجيهه للتحقق (مهم جداً)
+        $otp_code = str_pad(mt_rand(0, 999999), 6, '0', STR_PAD_LEFT);
+        $expires = date('Y-m-d H:i:s', time() + 300);
+        mysqli_query($conn, "DELETE FROM otp_codes WHERE identifier = '$phone'");
+        mysqli_query($conn, "INSERT INTO otp_codes (identifier, type, code, expires_at) VALUES ('$phone', 'phone', '$otp_code', '$expires')");
+        
+        $_SESSION['otp_identifier'] = $phone;
+
+        echo json_encode([
+            'status' => 'success', 
+            'message' => 'تم التسجيل! جاري التحويل للتحقق...',
+            'redirect' => 'verify_otp.php'
+        ]);
     } else {
         echo json_encode(['status' => 'error', 'message' => 'خطأ في قاعدة البيانات: ' . mysqli_error($conn)]);
     }
@@ -188,21 +200,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['a
         </div>
 
         <form id="regForm" enctype="multipart/form-data">
-            <!-- CSRF Token -->
             <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
             <input type="hidden" name="action" value="final_submit">
             
-            <!-- الخطوة 1 -->
             <div class="form-step active" id="step1">
                 <h5 class="mb-4"><i class="fas fa-user-circle me-2 text-primary"></i> بيانات مدير الحساب</h5>
                 <div class="row g-4">
                     <div class="col-md-6">
                         <label class="form-label fw-semibold">الاسم الأول</label>
-                        <input type="text" class="form-control form-control-lg" name="first_name" required minlength="2" maxlength="100">
+                        <input type="text" class="form-control form-control-lg" name="first_name" required minlength="2" maxlength="100" placeholder="مثال: محمد">
                     </div>
                     <div class="col-md-6">
                         <label class="form-label fw-semibold">الاسم الأخير</label>
-                        <input type="text" class="form-control form-control-lg" name="last_name" required minlength="2" maxlength="100">
+                        <input type="text" class="form-control form-control-lg" name="last_name" required minlength="2" maxlength="100" placeholder="مثال: العتيبي">
                     </div>
                     <div class="col-md-6">
                         <label class="form-label fw-semibold">رقم الجوال</label>
@@ -210,7 +220,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['a
                     </div>
                     <div class="col-md-6">
                         <label class="form-label fw-semibold">البريد الإلكتروني</label>
-                        <input type="email" class="form-control form-control-lg" name="email" required maxlength="255">
+                        <input type="email" class="form-control form-control-lg" name="email" required maxlength="255" placeholder="name@company.com">
                     </div>
                     <div class="col-md-12">
                         <label class="form-label fw-semibold">كلمة المرور</label>
@@ -225,17 +235,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['a
                 </div>
             </div>
 
-            <!-- الخطوة 2 -->
             <div class="form-step" id="step2">
                 <h5 class="mb-4"><i class="fas fa-store me-2 text-primary"></i> بيانات المنشأة والتوثيق</h5>
                 <div class="row g-4">
                     <div class="col-md-6">
                         <label class="form-label fw-semibold">اسم المتجر</label>
-                        <input type="text" class="form-control form-control-lg" name="store_name" required minlength="3" maxlength="100">
+                        <input type="text" class="form-control form-control-lg" name="store_name" required minlength="3" maxlength="100" placeholder="مثال: متجر الأناقة">
                     </div>
                     <div class="col-md-6">
                         <label class="form-label fw-semibold">رابط المتجر الإلكتروني</label>
-                        <input type="url" class="form-control form-control-lg" name="store_link" required maxlength="255">
+                        <input type="url" class="form-control form-control-lg" name="store_link" required maxlength="255" placeholder="https://salla.sa/your-store">
                     </div>
                     <div class="col-md-6">
                         <label class="form-label fw-semibold">نوع وثيقة التوثيق</label>
@@ -246,7 +255,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['a
                     </div>
                     <div class="col-md-6">
                         <label class="form-label fw-semibold" id="docNumLabel">رقم السجل التجاري</label>
-                        <input type="text" class="form-control form-control-lg" name="doc_number" required maxlength="50">
+                        <input type="text" class="form-control form-control-lg" name="doc_number" required maxlength="50" placeholder="مثال: 1010xxxxxx">
                     </div>
                     <div class="col-md-6">
                         <label class="form-label fw-semibold">تاريخ انتهاء الوثيقة</label>
@@ -259,7 +268,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['a
                     </div>
                     <div class="col-md-12">
                         <label class="form-label fw-semibold">العنوان الوطني</label>
-                        <input type="text" class="form-control form-control-lg" name="national_address" required maxlength="255">
+                        <input type="text" class="form-control form-control-lg" name="national_address" required maxlength="255" placeholder="اسم الشارع، الحي، المدينة">
                     </div>
                     <div class="col-md-12">
                         <div class="form-check form-switch p-3 border rounded">
@@ -270,7 +279,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['a
                     <div id="vatSection" class="row g-4 d-none">
                         <div class="col-md-6">
                             <label class="form-label fw-semibold">الرقم الضريبي</label>
-                            <input type="text" class="form-control form-control-lg" name="vat_number" maxlength="50">
+                            <input type="text" class="form-control form-control-lg" name="vat_number" maxlength="50" placeholder="مثال: 3xxxxxxxxxxxxx">
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-semibold">شهادة تسجيل الضريبة</label>
@@ -285,7 +294,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['a
                 </div>
             </div>
 
-            <!-- الخطوة 3 -->
             <div class="form-step" id="step3">
                 <h5 class="mb-4"><i class="fas fa-university me-2 text-primary"></i> بيانات الحساب البنكي</h5>
                 <div class="alert alert-warning border-0 shadow-sm mb-4">
@@ -294,19 +302,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['a
                 <div class="row g-4">
                     <div class="col-md-6">
                         <label class="form-label fw-semibold">اسم البنك</label>
-                        <input type="text" class="form-control form-control-lg" name="bank_name" required maxlength="100">
+                        <input type="text" class="form-control form-control-lg" name="bank_name" required maxlength="100" placeholder="مثال: مصرف الراجحي">
                     </div>
                     <div class="col-md-6">
                         <label class="form-label fw-semibold">رقم الآيبان (IBAN)</label>
-                        <input type="text" class="form-control form-control-lg" name="iban" placeholder="SA..." required maxlength="34" pattern="SA[0-9]{22}">
+                        <input type="text" class="form-control form-control-lg" name="iban" placeholder="SAxxxxxxxxxxxxxxxxxxxxxx" required maxlength="34" pattern="SA[0-9]{22}">
                     </div>
                     <div class="col-md-6">
                         <label class="form-label fw-semibold">رمز السويفت (SWIFT)</label>
-                        <input type="text" class="form-control form-control-lg" name="swift_code" required maxlength="11">
+                        <input type="text" class="form-control form-control-lg" name="swift_code" required maxlength="11" placeholder="RJHI...">
                     </div>
                     <div class="col-md-6">
                         <label class="form-label fw-semibold">اسم المستفيد الكامل</label>
-                        <input type="text" class="form-control form-control-lg" name="beneficiary_name" required maxlength="100">
+                        <input type="text" class="form-control form-control-lg" name="beneficiary_name" required maxlength="100" placeholder="مثال: مؤسسة التقنية الحديثة">
                     </div>
                     <div class="col-md-12">
                         <label class="form-label fw-semibold">رفع صورة شهادة الآيبان</label>
@@ -320,7 +328,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['a
                 </div>
             </div>
 
-            <!-- الخطوة 4 -->
             <div class="form-step" id="step4">
                 <h4 class="text-center mb-4">مراجعة بيانات الانضمام</h4>
                 <div id="reviewGrid" class="row"></div>
@@ -433,22 +440,8 @@ async function submitRegistration() {
         const result = await response.json();
         
         if (result.status === 'success') {
-            document.querySelector('.wizard-card').innerHTML = `
-                <div class="text-center py-5">
-                    <div class="mb-4"><i class="fas fa-check-circle" style="font-size: 100px; color: var(--p-green);"></i></div>
-                    <h2 class="fw-bold">تم استلام طلبك بنجاح! 🎉</h2>
-                    <p class="text-muted fs-5 mt-3">شكراً لك على الانضمام إلى TaKeedPay</p>
-                    <div class="alert alert-info mt-4 mx-auto" style="max-width: 500px;">
-                        <i class="fas fa-info-circle me-2"></i>
-                        بياناتك قيد المراجعة والتدقيق. سيتم إشعارك عبر البريد والجوال فور تفعيل حسابك (2-5 أيام عمل).
-                    </div>
-                    <a href="status.php" class="btn btn-navy me-2">
-                        <i class="fas fa-search me-1"></i> تحقق من حالتك
-                    </a>
-                    <a href="index.php" class="btn btn-outline-secondary">
-                        <i class="fas fa-home me-1"></i> العودة للرئيسية
-                    </a>
-                </div>`;
+             // هنا تم التعديل: التوجيه لصفحة التحقق بدلاً من رسالة النجاح
+            window.location.href = result.redirect; 
         } else {
             alert("❌ خطأ: " + result.message);
             btn.disabled = false;
@@ -456,6 +449,7 @@ async function submitRegistration() {
         }
     } catch (err) {
         alert("❌ خطأ في الاتصال بالسيرفر. حاول مجدداً.");
+        console.error(err); // للمساعدة في اكتشاف الأخطاء
         btn.disabled = false;
         btn.innerHTML = 'تأكيد وإرسال الطلب';
     }
