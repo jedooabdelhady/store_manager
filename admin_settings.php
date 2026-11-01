@@ -2,8 +2,12 @@
 session_start();
 require_once 'config.php';
 
-// مفترض أن الأدمن رقم 1 هو الرئيسي حالياً
-$admin_id = 1; 
+// حماية: الصفحة للأدمن المسجل دخوله فقط
+if (!isset($_SESSION['admin_id'])) {
+    header("Location: login.php");
+    exit;
+}
+$admin_id = intval($_SESSION['admin_id']); 
 $msg = "";
 $msg_type = "";
 

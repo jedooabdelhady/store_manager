@@ -9,7 +9,7 @@ if (!isset($_SESSION['otp_identifier'])) {
 }
 
 $error = "";
-$identifier = $_SESSION['otp_identifier'];
+$identifier = mysqli_real_escape_string($conn, $_SESSION['otp_identifier']);
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $code = mysqli_real_escape_string($conn, $_POST['otp_code']);
@@ -22,6 +22,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         mysqli_query($conn, "DELETE FROM otp_codes WHERE identifier = '$identifier'");
         
         $user = mysqli_fetch_assoc(mysqli_query($conn, "SELECT * FROM merchants WHERE phone = '$identifier' OR email = '$identifier'"));
+        unset($_SESSION['otp_identifier']);
+
+        // حماية: الحساب لازم يكون مفعّل من الإدارة قبل الدخول
+        if (!$user || $user['status'] != 'active') {
+            header("Location: status.php?identifier=" . urlencode($identifier));
+            exit;
+        }
+
+        session_regenerate_id(true);
         $_SESSION['merchant_id'] = $user['id'];
         $_SESSION['user_type'] = 'merchant';
         
@@ -42,7 +51,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <body class="bg-light d-flex align-items-center justify-content-center" style="min-height: 100vh;">
     <div class="bg-white p-5 rounded shadow text-center" style="width: 400px;">
         <h4>رمز التحقق</h4>
-        <p class="text-muted">أرسلنا كود إلى: <?php echo $identifier; ?></p>
+        <p class="text-muted">أرسلنا كود إلى: <?php echo htmlspecialchars($identifier); ?></p>
         <?php if($error) echo "<div class='alert alert-danger'>$error</div>"; ?>
         <form method="POST">
             <input type="text" name="otp_code" class="form-control text-center fs-3 mb-3" maxlength="6" placeholder="XXXXXX" required>

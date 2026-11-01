@@ -300,7 +300,7 @@ if (!empty($identifier)) {
             <h5 class="text-center mb-4">تحقق من حالة حسابك</h5>
             <form method="POST">
                 <div class="search-box">
-                    <input type="text" name="identifier" placeholder="أدخل رقم الجوال أو البريد الإلكتروني" required value="<?php echo $identifier; ?>">
+                    <input type="text" name="identifier" placeholder="أدخل رقم الجوال أو البريد الإلكتروني" required value="<?php echo htmlspecialchars($identifier); ?>">
                 </div>
                 <button type="submit" class="btn btn-primary-custom w-100">
                     <i class="fas fa-search me-2"></i> البحث

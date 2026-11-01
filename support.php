@@ -131,7 +131,7 @@ $merchant = mysqli_fetch_assoc(mysqli_query($conn, "SELECT store_name FROM merch
                         <?php while($t = mysqli_fetch_assoc($tickets)): ?>
                         <tr>
                             <td class="fw-bold text-muted">#<?php echo $t['id']; ?></td>
-                            <td class="fw-bold text-dark"><?php echo $t['subject']; ?></td>
+                            <td class="fw-bold text-dark"><?php echo htmlspecialchars($t['subject']); ?></td>
                             <td>
                                 <?php 
                                     if($t['status'] == 'open') echo '<span class="status-badge bg-open">مفتوحة</span>';
@@ -150,7 +150,7 @@ $merchant = mysqli_fetch_assoc(mysqli_query($conn, "SELECT store_name FROM merch
                             <div class="modal-dialog modal-lg modal-dialog-centered">
                                 <div class="modal-content border-0 shadow-lg rounded-4">
                                     <div class="modal-header border-0 bg-light">
-                                        <h5 class="fw-bold text-primary">تذكرة #<?php echo $t['id']; ?>: <?php echo $t['subject']; ?></h5>
+                                        <h5 class="fw-bold text-primary">تذكرة #<?php echo $t['id']; ?>: <?php echo htmlspecialchars($t['subject']); ?></h5>
                                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                     </div>
                                     <div class="modal-body p-4">

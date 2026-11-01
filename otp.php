@@ -13,7 +13,7 @@ $action = isset($_POST['action']) ? $_POST['action'] : '';
 // 1. إنشاء وإرسال OTP جديد
 // =====================================================
 if ($action === 'send') {
-    $type = $_POST['type']; // phone أو email
+    $type = mysqli_real_escape_string($conn, $_POST['type']); // phone أو email
     $identifier = mysqli_real_escape_string($conn, $_POST['identifier']);
     
     // توليد كود عشوائي 6 أرقام
@@ -50,9 +50,9 @@ if ($action === 'send') {
 // 2. التحقق من OTP
 // =====================================================
 elseif ($action === 'verify') {
-    $type = $_POST['type'];
+    $type = mysqli_real_escape_string($conn, $_POST['type']);
     $identifier = mysqli_real_escape_string($conn, $_POST['identifier']);
-    $code = $_POST['code'];
+    $code = mysqli_real_escape_string($conn, $_POST['code']);
     
     // البحث عن الكود
     $sql = "SELECT * FROM otp_codes WHERE identifier = '$identifier' AND type = '$type' AND code = '$code' AND expires_at > NOW() LIMIT 1";
@@ -87,7 +87,7 @@ elseif ($action === 'verify') {
 // 3. إعادة إرسال الكود (Rate Limiting)
 // =====================================================
 elseif ($action === 'resend') {
-    $type = $_POST['type'];
+    $type = mysqli_real_escape_string($conn, $_POST['type']);
     $identifier = mysqli_real_escape_string($conn, $_POST['identifier']);
     
     // التحقق من آخر محاولة إرسال

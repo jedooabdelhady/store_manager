@@ -24,6 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     if ($row_admin = mysqli_fetch_assoc($result_admin)) {
         if (password_verify($password, $row_admin['password'])) {
+            session_regenerate_id(true);
             $_SESSION['user_type'] = 'admin';
             $_SESSION['admin_id'] = $row_admin['id'];
             $_SESSION['admin_name'] = $row_admin['username'];

@@ -1,6 +1,13 @@
 <?php
 // payment_process.php - محاكاة معالجة الدفع
+session_start();
 require_once 'config.php';
+
+// حماية: هذا الملف يحوّل الطلب إلى "مدفوع" مباشرة، لذلك مسموح للأدمن فقط
+if (!isset($_SESSION['admin_id'])) {
+    header("Location: login.php");
+    exit;
+}
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['order_id'])) {
     

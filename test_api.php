@@ -4,11 +4,11 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 
 // ملف اختبار محاكاة لمتجر سلة/زد
-$url = 'http://' . $_SERVER['HTTP_HOST'] . '/api/create_order.php';
+$url = 'http://' . $_SERVER['HTTP_HOST'] . '/api.php';
 
 // البيانات التي يرسلها المتجر عادةً
 $data = [
-    'api_key' => 'tkp_338188bacc307bc0fd420d8ef07c23d1faa1ef5969dc8310', // <--- كانت الفاصلة ناقصة هنا
+    'api_key' => 'ضع_هنا_API_KEY_الخاص_بالتاجر', // <--- كانت الفاصلة ناقصة هنا
     'order_id' => 'SALLA-1001',
     'customer_name' => 'خالد العميل',
     'customer_phone' => '0500000000',

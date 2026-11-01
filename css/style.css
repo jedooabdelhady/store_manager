@@ -1,0 +1,5 @@
+/* الألوان الأساسية لـ TaKeedPay (مستخدمة في index.php و merchant_reports.php) */
+:root { --navy: #004a87; --navy-dark: #002d52; --green: #28a745; }
+body { font-family: 'Segoe UI', Tahoma, sans-serif; }
+.btn-primary-custom { background: var(--navy); color: #fff; border: none; font-weight: 600; }
+.btn-primary-custom:hover { background: var(--navy-dark); color: #fff; }

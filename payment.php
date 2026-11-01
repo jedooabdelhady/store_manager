@@ -20,6 +20,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['receipt'])) {
         }
         
         $ext = strtolower(pathinfo($_FILES['receipt']['name'], PATHINFO_EXTENSION));
+        // حماية: السماح بالصور فقط
+        $mime = function_exists('mime_content_type') ? mime_content_type($_FILES['receipt']['tmp_name']) : '';
+        if (!in_array($ext, ['jpg', 'jpeg', 'png', 'webp']) || ($mime && strpos($mime, 'image/') !== 0) || $_FILES['receipt']['size'] > 5 * 1024 * 1024) {
+            $ext = '';
+        }
+        if ($ext === '') {
+            $msg = "error_upload";
+        } else {
         $newName = "REC_" . time() . "_" . $order_id . "." . $ext;
         $target = $uploadDir . $newName;
         
@@ -37,6 +45,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['receipt'])) {
             $stmt->close();
         } else {
             $msg = "error_upload";
+        }
         }
     }
 }
@@ -156,7 +165,7 @@ if (!$order) {
 
 <script>
     // التأكد من وجود الآيبان قبل رسم الكود
-    var iban = "<?php echo $order['iban']; ?>";
+    var iban = <?php echo json_encode($order['iban']); ?>;
     
     if (iban && iban.length > 5) {
         new QRCode(document.getElementById("qrcode"), {

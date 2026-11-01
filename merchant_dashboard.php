@@ -56,7 +56,7 @@ $orders = mysqli_query($conn, $orders_sql);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لوحة التاجر | <?php echo $merchant['store_name']; ?></title>
+    <title>لوحة التاجر | <?php echo htmlspecialchars($merchant['store_name']); ?></title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -130,7 +130,7 @@ $orders = mysqli_query($conn, $orders_sql);
     
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h3 class="fw-bold" style="color: var(--navy);">أهلاً، <?php echo $merchant['first_name']; ?> 👋</h3>
+            <h3 class="fw-bold" style="color: var(--navy);">أهلاً، <?php echo htmlspecialchars($merchant['first_name']); ?> 👋</h3>
             <p class="text-muted">نظرة عامة على عمليات العربون والمدفوعات.</p>
         </div>
     </div>
@@ -152,7 +152,7 @@ $orders = mysqli_query($conn, $orders_sql);
                     </div>
                     <div class="col-md-4">
                         <div class="position-relative mt-3 mt-md-0">
-                            <input type="text" class="api-key-field" value="<?php echo $merchant['api_key']; ?>" readonly id="apiKeyField">
+                            <input type="text" class="api-key-field" value="<?php echo htmlspecialchars($merchant['api_key']); ?>" readonly id="apiKeyField">
                             <button class="btn-copy" onclick="copyApiKey()">نسخ</button>
                         </div>
                     </div>
@@ -202,10 +202,10 @@ $orders = mysqli_query($conn, $orders_sql);
                     <?php if(mysqli_num_rows($orders) > 0): ?>
                         <?php while($order = mysqli_fetch_assoc($orders)): ?>
                         <tr>
-                            <td class="fw-bold">#<?php echo $order['external_order_id']; ?></td>
+                            <td class="fw-bold">#<?php echo htmlspecialchars($order['external_order_id']); ?></td>
                             <td>
-                                <div class="fw-bold"><?php echo $order['customer_name']; ?></div>
-                                <small class="text-muted"><?php echo $order['customer_phone']; ?></small>
+                                <div class="fw-bold"><?php echo htmlspecialchars($order['customer_name']); ?></div>
+                                <small class="text-muted"><?php echo htmlspecialchars($order['customer_phone']); ?></small>
                             </td>
                             <td class="fw-bold text-success"><?php echo number_format($order['deposit_amount'], 2); ?></td>
                             <td>

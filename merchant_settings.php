@@ -43,7 +43,7 @@ $merchant = mysqli_fetch_assoc(mysqli_query($conn, "SELECT * FROM merchants WHER
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>إعدادات الحساب | <?php echo $merchant['store_name']; ?></title>
+    <title>إعدادات الحساب | <?php echo htmlspecialchars($merchant['store_name']); ?></title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -102,19 +102,19 @@ $merchant = mysqli_fetch_assoc(mysqli_query($conn, "SELECT * FROM merchants WHER
             <div class="row g-3 mb-4">
                 <div class="col-md-6">
                     <label class="form-label text-muted small fw-bold">الاسم الأول</label>
-                    <input type="text" name="first_name" class="form-control" value="<?php echo $merchant['first_name']; ?>" required>
+                    <input type="text" name="first_name" class="form-control" value="<?php echo htmlspecialchars($merchant['first_name']); ?>" required>
                 </div>
                 <div class="col-md-6">
                     <label class="form-label text-muted small fw-bold">اسم العائلة</label>
-                    <input type="text" name="last_name" class="form-control" value="<?php echo $merchant['last_name']; ?>" required>
+                    <input type="text" name="last_name" class="form-control" value="<?php echo htmlspecialchars($merchant['last_name']); ?>" required>
                 </div>
                 <div class="col-md-6">
                     <label class="form-label text-muted small fw-bold">اسم المتجر</label>
-                    <input type="text" name="store_name" class="form-control" value="<?php echo $merchant['store_name']; ?>" required>
+                    <input type="text" name="store_name" class="form-control" value="<?php echo htmlspecialchars($merchant['store_name']); ?>" required>
                 </div>
                 <div class="col-md-6">
                     <label class="form-label text-muted small fw-bold">رقم الجوال</label>
-                    <input type="text" name="phone" class="form-control" value="<?php echo $merchant['phone']; ?>" required>
+                    <input type="text" name="phone" class="form-control" value="<?php echo htmlspecialchars($merchant['phone']); ?>" required>
                 </div>
             </div>
 
@@ -122,7 +122,7 @@ $merchant = mysqli_fetch_assoc(mysqli_query($conn, "SELECT * FROM merchants WHER
             <div class="row g-3 mb-4">
                 <div class="col-md-6">
                     <label class="form-label text-muted small fw-bold">البريد الإلكتروني (لا يمكن تغييره)</label>
-                    <input type="email" class="form-control bg-light" value="<?php echo $merchant['email']; ?>" readonly>
+                    <input type="email" class="form-control bg-light" value="<?php echo htmlspecialchars($merchant['email']); ?>" readonly>
                 </div>
                 <div class="col-md-6">
                     <label class="form-label text-muted small fw-bold">كلمة المرور الجديدة</label>

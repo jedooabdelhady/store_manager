@@ -6,7 +6,7 @@ header("Access-Control-Allow-Methods: POST");
 
 // 2. استدعاء قاعدة البيانات
 // ملاحظة: نستخدم ../ للرجوع للمجلد الرئيسي لأن هذا الملف داخل مجلد api
-require_once '../config.php'; 
+require_once file_exists(__DIR__ . '/config.php') ? __DIR__ . '/config.php' : __DIR__ . '/../config.php'; 
 
 // مصفوفة الرد الموحدة
 $response = array();
@@ -19,8 +19,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $data = json_decode($json_input, true);
 
     // تحديد المتغيرات سواء جاءت من JSON أو POST عادي
-    $email = isset($data['email']) ? $data['email'] : $_POST['email'];
-    $password = isset($data['password']) ? $data['password'] : $_POST['password'];
+    $email = isset($data['email']) ? $data['email'] : ($_POST['email'] ?? '');
+    $password = isset($data['password']) ? $data['password'] : ($_POST['password'] ?? '');
 
     // تنظيف البيانات
     $email = mysqli_real_escape_string($conn, trim($email));

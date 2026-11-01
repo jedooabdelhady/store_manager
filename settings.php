@@ -21,10 +21,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_info'])) {
     // معالجة رفع الشعار
     $logo_sql_part = "";
     if (isset($_FILES['store_logo']) && $_FILES['store_logo']['error'] == 0) {
-        $ext = pathinfo($_FILES['store_logo']['name'], PATHINFO_EXTENSION);
+        $ext = strtolower(pathinfo($_FILES['store_logo']['name'], PATHINFO_EXTENSION));
+        if (!is_dir("uploads/logos")) { mkdir("uploads/logos", 0755, true); }
+        // حماية: السماح بالصور فقط
+        if (!in_array($ext, ['jpg', 'jpeg', 'png', 'webp']) || $_FILES['store_logo']['size'] > 2 * 1024 * 1024) { $ext = ''; }
         $new_name = "LOGO_" . $m_id . "_" . time() . "." . $ext;
         $target = "uploads/logos/" . $new_name;
-        if (move_uploaded_file($_FILES['store_logo']['tmp_name'], $target)) {
+        if ($ext !== '' && move_uploaded_file($_FILES['store_logo']['tmp_name'], $target)) {
             $logo_sql_part = ", store_logo = '$target'";
         }
     }
@@ -178,15 +181,15 @@ $merchant = mysqli_fetch_assoc(mysqli_query($conn, "SELECT * FROM merchants WHER
                     <div class="row g-3">
                         <div class="col-md-6">
                             <label class="form-label">اسم المتجر</label>
-                            <input type="text" name="store_name" class="form-control" value="<?php echo $merchant['store_name']; ?>" required>
+                            <input type="text" name="store_name" class="form-control" value="<?php echo htmlspecialchars($merchant['store_name']); ?>" required>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">رقم الجوال</label>
-                            <input type="text" name="phone" class="form-control" value="<?php echo $merchant['phone']; ?>" required>
+                            <input type="text" name="phone" class="form-control" value="<?php echo htmlspecialchars($merchant['phone']); ?>" required>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">رابط المتجر</label>
-                            <input type="url" name="store_link" class="form-control" value="<?php echo $merchant['store_link']; ?>" required>
+                            <input type="url" name="store_link" class="form-control" value="<?php echo htmlspecialchars($merchant['store_link']); ?>" required>
                         </div>
                         
                         <div class="col-md-6">
